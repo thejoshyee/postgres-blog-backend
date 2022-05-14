@@ -1,0 +1,9 @@
+POST http://localhost:3001/api/blogs 
+Content-Type: application/json
+
+{
+"author": "Joe Chan",
+"url": "www.google.com",
+"title": "How to dance to the weekend"
+}
+
