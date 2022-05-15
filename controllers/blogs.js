@@ -1,12 +1,59 @@
 const router = require('express').Router()
-require('express-async-errors');
+require('express-async-errors')
+const jwt = require('jsonwebtoken')
+const { Op } = require('sequelize')
 
-const { Blog } = require('../models')
-
+const { Blog, User } = require('../models')
+const { SECRET } = require('../util/config')
 
 router.get('/', async (req, res) => {
-  const blogs = await Blog.findAll()
+  const where = {}
+
+  if (req.query.search) {
+    where.content = {
+      [Op.substring]: req.query.search
+    }
+  }
+
+  const blogs = await Blog.findAll({ 
+    attributes: { exclude: ['userId'] },
+    include: {
+      model: User,
+      attributes: ['name']
+    },
+    where
+  })
+
   res.json(blogs)
+})
+
+const tokenExtractor = (req, res, next) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    try {
+      console.log(authorization.substring(7))
+      console.log(SECRET)
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+    } catch (error) {
+      console.log(error)
+      return res.status(401).json({ error: 'token invalid' })
+    }
+  } else {
+    return res.status(401).json({ error: 'token missing' })
+  }
+
+  next()
+}
+
+
+router.post('/',tokenExtractor, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.decodedToken.id)
+    const blog = await Blog.create({...req.body, userId: user.id, date: new Date()})
+    res.json(blog)
+  } catch(error) {
+    return res.status(400).json({ error })
+  }
 })
 
 
@@ -15,15 +62,7 @@ const blogFinder = async (req, res, next) => {
     next()
   }
   
-router.post('/', async (req, res) => {
-    try {
-      const blog = await Blog.create(req.body)
-      return res.json(blog)
-    } catch (error) {
-      return res.status(400).json({ error })
-    }
-  })
-  
+
 
 router.get('/:id', blogFinder, async (req, res) => {
     if (req.blog) {
@@ -34,12 +73,25 @@ router.get('/:id', blogFinder, async (req, res) => {
   })
 
 
-router.delete('/:id', blogFinder, async (req, res) => {
+  router.delete('/:id', blogFinder, tokenExtractor, async (req, res) => {
     if (req.blog) {
-        await req.blog.destroy()
+      console.log(req.blog.toJSON())
+      const user = await User.findByPk(req.decodedToken.id)
+      if (req.blog.userId !== user.id) {
+        return res.status(401).json({ error: 'token missing or invalid' });
+      }
+      await req.blog.destroy()
     }
     res.status(204).end()
   })
+
+  // router.delete('/:id', blogFinder, async (req, res) => {
+  //   if (req.blog) {
+  //       await req.blog.destroy()
+  //   }
+  //   res.status(204).end()
+  // })
+
 
 
 router.put('/:id', blogFinder, async (req, res) => {

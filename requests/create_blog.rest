@@ -1,9 +1,10 @@
 POST http://localhost:3001/api/blogs 
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpvZTEyMyIsImlkIjoxLCJpYXQiOjE2NTI1NzcwMDB9.9bnG2LQT-johPiCpQ8ZYEB_glvjoCgM64I49vXAcEjM
 
 {
 "author": "Joe Chan",
 "url": "www.google.com",
-"title": "How to dance to the weekend"
+"title": "How to do the tango"
 }
 

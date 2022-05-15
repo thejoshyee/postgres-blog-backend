@@ -1,4 +1,4 @@
-DELETE http://localhost:3001/api/blogs/13
+DELETE http://localhost:3001/api/blogs/16
 Content-Type: application/json
-
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImpvZTEyMyIsImlkIjoxLCJpYXQiOjE2NTI1ODA3MTR9.wtsIcJ__PagH20DHofVr4LzWy9Et6WM-UwedkN91BlM
 
